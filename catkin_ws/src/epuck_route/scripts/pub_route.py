@@ -76,10 +76,13 @@ def escucha(pos):
 ## route trace
 def route():
    rate = rospy.Rate(15) # 15hz
+   global pos_x
+   global pos_y
+   global dir_w
    rate.sleep()
    x_vel = 1
    w_vel = 1
-   printdat = 0
+   printdat = 0 # imprimir (1) o no (0) los valores x,y,w
    while pos_x < 1:
       vel(x_vel,0.0)
       if printdat: print('x: ', pos_x)
@@ -134,6 +137,7 @@ if __name__ == '__main__':
 
          try:
                t = time.time() #init sim
+               print("Simulación iniciada...")
                route()
                elapsed = time.time() - t #end sim
                print("tiempo total de sim:",convert_t(elapsed))

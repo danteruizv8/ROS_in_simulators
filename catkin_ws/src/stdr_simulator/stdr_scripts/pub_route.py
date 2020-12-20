@@ -33,17 +33,25 @@
 #
 
 import rospy
+import time
 
 from geometry_msgs.msg import Twist #for publish
 from nav_msgs.msg import Odometry  #for subscriber
-#from std_srvs.srv import Empty, EmptyRequest  # for gazebo pause
+#from std_srvs.srv import Empty, EmptyRequest  # for pause
 
+
+## sec to h:min:sec
+def convert_t(seconds): 
+    seconds = seconds % (24 * 3600) 
+    hour = seconds // 3600
+    seconds %= 3600
+    minutes = seconds // 60
+    seconds %= 60
+      
+    return "%d:%02d:%02d" % (hour, minutes, seconds) 
 
 ### services
-#pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
-#rst_sim = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
-#rst_w = rospy.ServiceProxy('/gazebo/reset_world', Empty)
-#unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
+
 
 ## cond. ini
 vel_x = 0.0
@@ -74,17 +82,16 @@ def escucha(pos):
 ## route trace
 def route():
    rate = rospy.Rate(15) # 15hz
-   # while not rospy.is_shutdown():
    global pos_x
    global pos_y
    global dir_w
    rate.sleep()
    x_vel = 0.1
    w_vel = 0.1
-   printdat = 1
-   offset_x = pos_x # posicion inicial
-   offset_y = pos_y
-   print offset_x,offset_y
+   printdat = 0 # imprimir (1) o no (0) los valores x,y,w
+   offset_x = 0.1 # posicion inicial
+   offset_y = 0.1
+   print ("Pos. inicial: ",offset_x,offset_y)
    while pos_x < (1.0 + offset_x):
       vel(x_vel,0.0)
       if printdat: print('x: ', pos_x)
@@ -105,7 +112,7 @@ def route():
       if printdat: print('z: ', dir_w)
       rate.sleep()
      
-   while pos_x > (0.0 + offset_x):
+   while pos_x > (0.001 + offset_x):
        vel(x_vel,0.0)
        if printdat: print('y: ', pos_y)
        rate.sleep()
@@ -115,9 +122,9 @@ def route():
       if printdat: print('z: ', dir_w)
       rate.sleep()
      
-   while pos_y > (0.0 + offset_y):
+   while pos_y > (0.001 + offset_y):
        vel(x_vel,0.0)
-       if printdat:  print('x: ', pos_x)
+       if printdat:  print('y: ', pos_y)
        rate.sleep()
      
    while dir_w > -0.999:
@@ -126,6 +133,7 @@ def route():
       rate.sleep()    
 
    vel(0.0,0.0)  ## stop
+   print ("Pos. final: ",pos_x,pos_y)
 
 if __name__ == '__main__':
 
@@ -136,13 +144,13 @@ if __name__ == '__main__':
          
 
          try:
-#              pause(EmptyRequest())
-#              rst_sim(EmptyRequest())
-#              rst_w(EmptyRequest())
-#              unpause(EmptyRequest()) #init sim
+
+              t = time.time() #init sim
+              print("Simulacion iniciada...")
               route()
-#              pause(EmptyRequest())  #end sim
-              
+              elapsed = time.time() - t #end sim
+              print("tiempo total de sim:",convert_t(elapsed))
+
          except rospy.ROSInterruptException:
               pass
             
